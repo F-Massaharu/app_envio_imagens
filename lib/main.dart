@@ -1,9 +1,10 @@
+import 'package:app_envio_imagens/blocs/images/image_bloc.dart';
 import 'package:app_envio_imagens/firebase_options.dart';
-import 'package:app_envio_imagens/home/home_page.dart';
 import 'package:app_envio_imagens/login/login_check.dart';
-import 'package:app_envio_imagens/login/login_page.dart';
+import 'package:app_envio_imagens/storage/database_repository.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,7 +13,16 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+  Bloc.observer = AppBlocObserver();
+
   runApp(const MyApp());
+}
+
+class AppBlocObserver extends BlocObserver {
+  @override
+  void onTransition(Bloc bloc, Transition transition) {
+    super.onTransition(bloc, transition);
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -21,13 +31,24 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Firebase App',
-      theme: ThemeData(
-        useMaterial3: true,
-        primarySwatch: Colors.blue,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => ImageBloc(
+            databaseRepository: DatabaseRepository(),
+          )..add(
+              LoadImages(),
+            ),
+        )
+      ],
+      child: MaterialApp(
+        title: 'Firebase App',
+        theme: ThemeData(
+          useMaterial3: true,
+          primarySwatch: Colors.blue,
+        ),
+        home: const CheckLoginPage(),
       ),
-      home: const CheckLoginPage(),
     );
   }
 }
